@@ -38,6 +38,7 @@ export interface Activity extends ActivitySummaryDTO {
   instructions?: string
   grade?: number
   max_grade?: number
+    module_title?: string
 }
 
 export interface Workspace {
