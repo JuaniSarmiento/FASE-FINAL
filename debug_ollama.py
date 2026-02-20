@@ -8,7 +8,7 @@ def check_ollama():
     # When running from host, use localhost. 
     # When running in docker, use settings.OLLAMA_BASE_URL (http://ollama:11434)
     # This script is for host execution.
-    url = "http://localhost:11434" 
+    url = "http://187.77.41.214:11434" 
     print(f"--- Checking Ollama Connection (from Host) ---")
     print(f"URL: {url}")
     

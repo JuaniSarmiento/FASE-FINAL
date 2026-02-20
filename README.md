@@ -100,7 +100,7 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5440/ai_native
 TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5440/ai_native_test
 
 # AI Services
-OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_BASE_URL=http://187.77.41.214:11434
 DB_ECHO=True
 ```
 

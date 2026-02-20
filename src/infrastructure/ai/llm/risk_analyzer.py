@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class RiskAnalyzer:
     def __init__(self, model: str = None, base_url: str = None):
         self.model = model or os.getenv("OLLAMA_MODEL", "llama3")
-        self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://187.77.41.214:11434")
 
     def analyze_student_risk(self, student_name: str, activity_title: str, chat_history: List[Dict], code_submission: str, grade: float) -> Dict[str, Any]:
         """

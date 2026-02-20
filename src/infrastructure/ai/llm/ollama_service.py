@@ -12,9 +12,10 @@ class OllamaExerciseGenerator(IExerciseGenerator):
     def __init__(self):
         # List of potential URLs to try
         self.potential_urls = [
+            "http://187.77.41.214:11434",
             settings.OLLAMA_BASE_URL.rstrip("/"),
-            "[http://host.docker.internal:11434](http://host.docker.internal:11434)",
-            "[http://172.17.0.1:11434](http://172.17.0.1:11434)", # Default Docker bridge gateway
+            "http://host.docker.internal:11434",
+            "http://172.17.0.1:11434", # Default Docker bridge gateway
             "http://ollama:11434", # If running in a container named 'ollama'
             "http://localhost:11434"
         ]
