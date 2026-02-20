@@ -16,18 +16,18 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
- ollama:
-    image: ollama/ollama:latest
-    container_name: fase_final_ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+ #ollama:
+    #image: ollama/ollama:latest
+    #container_name: fase_final_ollama
+    #ports:
+    #  - "11434:11434"
+    #volumes:
+    #  - ollama_data:/root/.ollama
+    #healthcheck:
+    #  test: ["CMD", "ollama", "list"]
+    #  interval: 10s
+    #  timeout: 5s
+    #  retries: 5
 
   chroma:
     image: chromadb/chroma:0.4.24
