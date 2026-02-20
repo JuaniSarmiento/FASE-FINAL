@@ -10,18 +10,17 @@ from src.infrastructure.config.settings import settings
 
 class OllamaExerciseGenerator(IExerciseGenerator):
     def __init__(self):
-        # List of potential URLs to try
+        # List of potential URLs to try - Prioritize settings first
         self.potential_urls = [
-            "http://187.77.41.214:11434",
             settings.OLLAMA_BASE_URL.rstrip("/"),
+            "http://ollama:11434", # If running in Docker with service name
+            "http://localhost:11434", # Local development
             "http://host.docker.internal:11434",
             "http://172.17.0.1:11434", # Default Docker bridge gateway
-            "http://ollama:11434", # If running in a container named 'ollama'
-            "http://localhost:11434"
         ]
         self.base_url = None
-        # FIX 1: Apuntamos al modelo más inteligente que bajamos (3B)
-        self.model = "llama3" 
+        self.model = "llama3"
+        print(f"--- [OllamaExerciseGenerator] Initialized with model: {self.model} ---") 
 
     def _find_working_url(self):
         if self.base_url:
@@ -31,18 +30,26 @@ class OllamaExerciseGenerator(IExerciseGenerator):
         for url in self.potential_urls:
             try:
                 # Use /api/tags or /api/version to check connectivity lightly
-                resp = requests.get(f"{url}/api/tags", timeout=1)
+                resp = requests.get(f"{url}/api/tags", timeout=2)
                 if resp.status_code == 200:
                     print(f"--- [Ollama] Connected successfully to {url} ---")
+                    # Verify model is available
+                    tags_data = resp.json()
+                    available_models = [model.get('name', '').split(':')[0] for model in tags_data.get('models', [])]
+                    print(f"--- [Ollama] Available models: {available_models} ---")
+                    if self.model not in available_models and not any(self.model in m for m in available_models):
+                        print(f"--- [Ollama] WARNING: Model '{self.model}' not found. Available: {available_models} ---")
+                        print(f"--- [Ollama] HINT: Run 'ollama pull {self.model}' to download the model ---")
                     self.base_url = url
                     return url
-            except Exception:
-                print(f"--- [Ollama] Failed to connect to {url} ---")
+            except Exception as e:
+                print(f"--- [Ollama] Failed to connect to {url}: {str(e)} ---")
                 continue
         
-        # Fallback to settings if none work (will likely fail but keeps original behavior)
-        print("--- [Ollama] Could not find working URL, defaulting to settings ---")
-        return settings.OLLAMA_BASE_URL.rstrip("/")
+        # No working URL found
+        error_msg = f"Could not connect to Ollama at any URL. Tried: {self.potential_urls}"
+        print(f"--- [Ollama] CRITICAL ERROR: {error_msg} ---")
+        raise ConnectionError(error_msg)
 
     def generate(
         self, 
@@ -124,40 +131,129 @@ class OllamaExerciseGenerator(IExerciseGenerator):
         return all_exercises
 
     def _build_prompt(self, topic: str, count: int, difficulty: Difficulty, language: ProgrammingLanguage, context: str = None) -> str:
-        # FIX 4: Prompt con rol educativo y constraints narrativos fuertes
+        # PROMPT MEJORADO DRÁSTICAMENTE - Sin código en starter_code, ejercicios únicos y variados
         base_prompt = f"""
-        Eres un Diseñador Instruccional experto en crear ejercicios de programación para estudiantes universitarios.
-        Tu misión es generar {count} ejercicio(s) de programación sobre el tema '{topic}'.
-        
-        Parámetros:
-        - Dificultad: {difficulty.value}
-        - Lenguaje: {language.value}
+Eres un Diseñador Instruccional Senior de la UTN especializado en crear ejercicios de programación pedagógicamente efectivos.
 
-        REGLAS ESTRICTAS DE GENERACIÓN:
-        1. IDIOMA: Todo el texto (títulos, enunciados, comentarios del código) debe estar en Español de Argentina.
-        2. NARRATIVA ACADÉMICA: El 'problem_statement' debe plantear un caso de uso real e interesante (ej. simular un cajero automático, calcular el promedio de notas de la UTN).
-        3. NIVEL PRINCIPIANTE (SIN FUNCIONES): El estudiante NO SABE qué es una función. El 'starter_code' debe ser un script de arriba hacia abajo. NO uses "def" ni "class".
-        4. CASOS DE PRUEBA: Los 'test_cases' deben tener inputs simples (en formato string) y la salida esperada exacta. Deben ser lógicos para el problema.
+MISIÓN: Generar {count} ejercicio(s) ÚNICOS Y VARIADOS sobre el tema '{topic}'.
 
-        FORMATO OBLIGATORIO:
-        Devuelve ÚNICAMENTE un objeto JSON válido. Nada de texto introductorio. Usa esta estructura exacta:
+PARÁMETROS:
+- Dificultad: {difficulty.value}
+- Lenguaje: {language.value}
+
+═══════════════════════════════════════════════════════════════════
+REGLAS CRÍTICAS (CUMPLIMIENTO OBLIGATORIO):
+═══════════════════════════════════════════════════════════════════
+
+1. **IDIOMA**: Español de Argentina en todo el contenido (títulos, enunciados, comentarios).
+
+2. **DIVERSIDAD ABSOLUTA**: 
+   - Cada ejercicio DEBE tener un escenario COMPLETAMENTE DIFERENTE.
+   - PROHIBIDO repetir temas (ej: si ya hiciste "Cajero Automático", NO hagas "Cajero Bancario" ni "ATM").
+   - Usa contextos variados: tiendas, juegos, universidad, clima, deportes, cocina, etc.
+   - Ejemplo de VARIEDAD CORRECTA: "Cajero Automático", "Calculadora de Notas UTN", "Sistema de Descuentos en Tienda", "Juego de Adivinanzas".
+
+3. **TÍTULOS DESCRIPTIVOS**: 
+   - NUNCA uses "Untitled", "Sin Título" o "Ejercicio N".
+   - El título debe describir claramente el problema (ej: "Calculadora de Promedio de Notas", "Conversor de Temperatura").
+
+4. **STARTER_CODE - REGLA MÁS IMPORTANTE**:
+   🚨 ATENCIÓN: El campo "starter_code" DEBE contener ÚNICAMENTE este texto exacto:
+   
+   "# Escribe tu código aquí\n"
+   
+   ❌ PROHIBIDO ABSOLUTAMENTE:
+   - NO incluyas variables declaradas (ej: "saldo = 0")
+   - NO incluyas bucles (ej: "while True:")
+   - NO incluyas input() o print()
+   - NO incluyas lógica condicional (ej: "if opcion == 1:")
+   - NO incluyas ninguna línea de código excepto el comentario
+   
+   ✅ CORRECTO: "# Escribe tu código aquí\n"
+   ❌ INCORRECTO: "# Escribe tu código aquí\nsaldo = 0\n"
+   ❌ INCORRECTO: "# Declara las variables aquí\n"
+
+5. **PROBLEM_STATEMENT** (Enunciado del Problema):
+   - Debe ser una narrativa clara y detallada que describa:
+     * El contexto del problema (ej: "Sos el encargado de una librería...")
+     * Qué debe hacer el programa paso a paso
+     * Qué inputs recibirá y qué outputs debe generar
+     * Ejemplos de ejecución si es necesario
+   - Longitud recomendada: 3-6 oraciones.
+
+6. **TEST_CASES** (Casos de Prueba):
+   - Mínimo 2 casos de prueba por ejercicio (1 visible, 1 oculto).
+   - El "input_data" debe ser un string simple (ej: "10", "15.5", "Juan").
+   - El "expected_output" debe ser EXACTAMENTE lo que el programa debe imprimir.
+   - Deben ser lógicos y verificables.
+
+7. **NIVEL DE DIFICULTAD**:
+   - BEGINNER: Solo print, input, variables, if/else, bucles básicos (for, while).
+   - INTERMEDIATE: Listas, strings avanzados, bucles anidados.
+   - ADVANCED: Diccionarios, funciones simples (si el nivel lo permite).
+   - NO uses funciones definidas por el usuario si el nivel es BEGINNER.
+
+═══════════════════════════════════════════════════════════════════
+FORMATO DE SALIDA (JSON):
+═══════════════════════════════════════════════════════════════════
+
+Devuelve ÚNICAMENTE un objeto JSON válido. Sin texto introductorio ni explicaciones.
+Estructura EXACTA:
+
+{{
+    "exercises": [
         {{
-            "exercises": [
-                {{
-                    "title": "Nombre del Ejercicio",
-                    "problem_statement": "Descripción narrativa del problema y las instrucciones exactas de qué debe hacer el programa...",
-                    "starter_code": "# Escribe tu código aquí\n",
-                    "test_cases": [
-                        {{"input_data": "10", "expected_output": "20", "is_hidden": false}},
-                        {{"input_data": "5", "expected_output": "10", "is_hidden": true}}
-                    ]
-                }}
+            "title": "Título Descriptivo del Ejercicio",
+            "problem_statement": "Descripción narrativa completa del problema con contexto, instrucciones claras de qué debe hacer el programa, qué inputs recibe y qué outputs debe generar. Incluye ejemplos si es necesario para claridad.",
+            "starter_code": "# Escribe tu código aquí\\n",
+            "test_cases": [
+                {{"input_data": "10", "expected_output": "El resultado es: 20", "is_hidden": false}},
+                {{"input_data": "5", "expected_output": "El resultado es: 10", "is_hidden": true}}
             ]
         }}
-        """
+    ]
+}}
+
+═══════════════════════════════════════════════════════════════════
+EJEMPLOS DE LO QUE NO HACER:
+═══════════════════════════════════════════════════════════════════
+
+❌ MALO - Ejercicio repetido:
+Ejercicio 1: "Cajero Automático - Depósito"
+Ejercicio 2: "Cajero Automático - Retiro"
+Ejercicio 3: "Sistema Bancario de Consulta"
+
+❌ MALO - Starter code con solución:
+"starter_code": "saldo = 0\\nwhile True:\\n    print('Menú')\\n"
+
+❌ MALO - Título genérico:
+"title": "Untitled"
+"title": "Ejercicio 3"
+
+✅ BUENO - Ejercicios variados:
+Ejercicio 1: "Calculadora de IMC (Índice de Masa Corporal)"
+Ejercicio 2: "Simulador de Dados para Juego de Mesa"
+Ejercicio 3: "Conversor de Pesos a Dólares"
+
+✅ BUENO - Starter code vacío:
+"starter_code": "# Escribe tu código aquí\\n"
+
+✅ BUENO - Título descriptivo:
+"title": "Sistema de Descuentos en Supermercado"
+
+═══════════════════════════════════════════════════════════════════
+"""
         
         if context:
-            base_prompt += f"\n\nATENCIÓN: Integra la siguiente INFORMACIÓN DEL APUNTE como temática para el ejercicio. Adapta la narrativa del problema a este contexto:\n---\n{context}\n---\n"
+            base_prompt += f"""
+CONTEXTO ADICIONAL DEL APUNTE:
+═══════════════════════════════════════════════════════════════════
+Integra la siguiente información del material de estudio como temática para los ejercicios.
+Adapta la narrativa del problema usando estos conceptos, pero mantén la diversidad de escenarios.
+
+{context}
+═══════════════════════════════════════════════════════════════════
+"""
         
         return base_prompt
 

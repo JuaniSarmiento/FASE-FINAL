@@ -25,37 +25,130 @@ class RiskAnalyzer:
                 role = "Estudiante" if msg.get('role') == 'user' else "IA Tutor"
                 chat_text += f"{role}: {msg.get('content')}\n"
 
-        # 2. Build Prompt
-        prompt = f"""Actúas como un Psicólogo Educativo y Experto en Pedagogía de Programación.
-Analiza el desempeño y comportamiento del estudiante '{student_name}' en la actividad '{activity_title}'.
+        # 2. Build Prompt - MEJORADO DRÁSTICAMENTE
+        prompt = f"""Eres un Psicopedagogo especializado en Educación Tecnológica y Análisis de Conducta en Aprendizaje de Programación.
 
-DATOS:
-- Nota Final: {grade}/100
-- Código Entregado:
+Tu tarea es evaluar el RIESGO DE DESERCIÓN O FRUSTRACIÓN del estudiante '{student_name}' en la actividad '{activity_title}'.
+
+═══════════════════════════════════════════════════════════════════
+DATOS DEL ESTUDIANTE:
+═══════════════════════════════════════════════════════════════════
+📊 Nota Final de la Actividad: {grade}/100
+
+💻 Código Entregado:
 {code_submission[:1000]}
 ... (truncado)
 
-- Historial de Chat con el Tutor IA:
+🗨️ Historial de Chat con el Tutor IA (Últimas 15 interacciones):
 {chat_text}
 
-TAREA:
-Evalúa el "Riesgo de Deserción o Frustración" y detecta patrones de aprendizaje.
-Busca explícitamente en el chat:
-1. **Solicitud de Código**: ¿El estudiante pidió la solución directa ("dame el código", "resuélvelo")?
-2. **Frustración/Conducta**: ¿Hubo insultos, mayúsculas agresivas o abandono?
-3. **Autonomía**: ¿Preguntó dudas conceptuales o solo copió y pegó?
+═══════════════════════════════════════════════════════════════════
+PATRONES A DETECTAR (ANÁLISIS OBLIGATORIO):
+═══════════════════════════════════════════════════════════════════
 
-SALIDA REQUERIDA (JSON):
+🚨 **1. BÚSQUEDA DE SOLUCIONES DIRECTAS (Copy-Seeking):**
+   Busca frases como:
+   - "Dame el código", "Haceme el ejercicio", "Pasame la solución"
+   - "Completá esto", "Escribí el programa", "Resuélvelo"
+   - "No entiendo, hacelo vos"
+   
+   NIVEL DE RIESGO:
+   - Si aparece 3+ veces: CRITICAL (100)
+   - Si aparece 1-2 veces: HIGH (70-85)
+   - Si no aparece: Evaluar otros factores
+
+🚨 **2. INDICADORES DE FRUSTRACIÓN:**
+   Busca patrones emocionales:
+   - **Verbales**: "Esto es imposible", "No puedo", "Me rindo", "No entiendo nada"
+   - **Agresivos**: Insultos, mayúsculas sostenidas (ej: "NO FUNCIONA NADA"), sarcasmo
+   - **Abandono**: Mensajes de rendición, "Dejá, no importa"
+   
+   NIVEL DE RIESGO:
+   - Frustración con agresión: HIGH (75-90)
+   - Frustración sin agresión pero repetida: MEDIUM (50-70)
+   - Frustración momentánea superada: LOW (20-40)
+
+🚨 **3. AUTONOMÍA Y ESFUERZO GENUINO:**
+   Busca evidencia de:
+   - **Bueno**: Preguntas conceptuales específicas, pide aclaraciones, comparte código con errores
+   - **Bueno**: Muestra progreso iterativo (código va mejorando en el chat)
+   - **Malo**: Solo pide respuestas, no comparte código propio, no hace preguntas específicas
+   - **Malo**: Código entregado es muy diferente al discutido en chat (posible copia)
+   
+   NIVEL DE RIESGO:
+   - Alta autonomía: LOW (0-30)
+   - Autonomía moderada: MEDIUM (40-60)
+   - Baja autonomía: HIGH (70-90)
+
+🚨 **4. CORRELACIÓN CHAT vs CÓDIGO:**
+   Analiza:
+   - Si el alumno preguntó mucho pero entregó código vacío: HIGH RISK (posible rendición)
+   - Si no preguntó nada y entregó código perfecto: MEDIUM RISK (posible copia externa)
+   - Si preguntó y el código refleja el proceso de chat: LOW RISK (aprendizaje genuino)
+
+🚨 **5. NOTA vs ESFUERZO:**
+   - Nota < 40 + chat activo: Aprendizaje en proceso, LOW-MEDIUM RISK
+   - Nota < 40 + sin chat: HIGH RISK (desinterés o bloqueo)
+   - Nota > 80 + sin chat: MEDIUM RISK (posible copia)
+   - Nota > 80 + chat activo: LOW RISK (aprendizaje exitoso)
+
+═══════════════════════════════════════════════════════════════════
+TAREA DE SALIDA (JSON ESTRICTO):
+═══════════════════════════════════════════════════════════════════
+
+Evalúa el riesgo usando los patrones anteriores y genera un JSON con:
+
+1. **risk_score** (0-100):
+   - 0-30: LOW (Estudiante comprometido y autónomo)
+   - 31-60: MEDIUM (Algunas señales de dificultad, requiere seguimiento)
+   - 61-85: HIGH (Frustración evidente o búsqueda de atajos)
+   - 86-100: CRITICAL (Abandono inminente o conducta académica irregular)
+
+2. **risk_level**: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+
+3. **diagnosis**: 
+   - Descripción del comportamiento observado (2-3 oraciones).
+   - DEBE mencionar evidencia específica del chat si existe.
+   - Ejemplo: "El estudiante solicitó la solución directa 2 veces ('dame el código') y mostró frustración al expresar 'esto es imposible'. La falta de preguntas conceptuales sugiere baja autonomía."
+
+4. **evidence**: Array de citas textuales del chat o observaciones del código.
+   - Si hay solicitudes de código, citarlas textualmente.
+   - Si hay frustración, citar la frase exacta.
+   - Si no hay chat, mencionar: "No hay interacciones registradas con el tutor."
+
+5. **teacher_advice**: 
+   - Consejo específico para el docente.
+   - Ejemplo: "Abordar la frustración en tutoría individual. Reforzar metodología de resolución de problemas."
+   - Ejemplo: "Validar autoría del código en clase. Posible indicador de copia externa."
+
+6. **positive_aspects**: Array de aspectos positivos si existen.
+   - Ejemplo: "Preguntó conceptos específicos", "Compartió código con errores para revisión"
+   - Si no hay nada positivo: ["Ninguno evidente en esta actividad"]
+
+═══════════════════════════════════════════════════════════════════
+FORMATO JSON (RESPONDE SOLO ESTO):
+═══════════════════════════════════════════════════════════════════
+
 {{
-  "risk_score": <0-100, donde 100 es riesgo crítico>,
+  "risk_score": <0-100>,
   "risk_level": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-  "diagnosis": "<Diagnóstico que MENCIONE el comportamiento en el chat (ej: 'Se frustró y pidió código')>",
-  "evidence": ["<Cita textual del chat si hubo conducta relevante>", "<Evidencia de código>"],
-  "teacher_advice": "<Consejo basado en comportamiento (ej: 'Abordar la frustración con el alumno')>",
-  "positive_aspects": ["<Algo bueno>"]
+  "diagnosis": "<Diagnóstico basado en EVIDENCIA del chat y código. 2-3 oraciones>",
+  "evidence": [
+    "<Cita textual del chat si existe (ej: 'Estudiante dijo: dame el código')>",
+    "<Observación del código (ej: 'Código entregado vacío a pesar de 10 mensajes en el chat')>"
+  ],
+  "teacher_advice": "<Consejo práctico para el docente sobre cómo actuar con este estudiante>",
+  "positive_aspects": ["<Aspecto positivo si existe>", "..."]
 }}
 
-Responde SOLO el JSON.
+═══════════════════════════════════════════════════════════════════
+IMPORTANTE:
+═══════════════════════════════════════════════════════════════════
+- Basá tu análisis en EVIDENCIA, no en suposiciones.
+- Si el chat está vacío, consideralo un factor de riesgo moderado (MEDIUM).
+- NO castigues la frustración legítima si el alumno muestra esfuerzo.
+- La solicitud directa de código ES el indicador más fuerte de riesgo.
+
 """
 
         try:

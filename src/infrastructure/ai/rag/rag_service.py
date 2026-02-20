@@ -21,54 +21,96 @@ class RagService(RagServicePort):
             )
             # Simple health check or list collections to verify connection
             self.chroma_client.heartbeat()
-            print("--- [RagService] Protected connection to ChromaDB ---")
+            print("--- [RagService] Successfully connected to ChromaDB ---")
         except Exception as e:
-            print(f"--- [RagService] Failed to connect to ChromaDB: {e} ---")
-            # We might want to fallback or raise, but for now let it fail loudly if strictly required
-            raise e
+            error_msg = f"Failed to connect to ChromaDB at {settings.CHROMA_DB_HOST}:{settings.CHROMA_DB_PORT}"
+            print(f"--- [RagService] ERROR: {error_msg} ---")
+            print(f"--- [RagService] Details: {str(e)} ---")
+            print(f"--- [RagService] HINT: Make sure ChromaDB is running. For Docker: docker-compose up chroma ---")
+            raise ConnectionError(error_msg) from e
 
         self.collection = self.chroma_client.get_or_create_collection(name="activity_documents")
         # Initialize Embedding Model
-        self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2') 
+        print("--- [RagService] Loading embedding model 'all-MiniLM-L6-v2'... ---")
+        self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        print("--- [RagService] Embedding model loaded successfully ---") 
 
     def process_document(self, activity_id: str, file_path: str, filename: str) -> ActivityDocument:
+        print(f"--- [RagService] Processing document: {filename} for activity {activity_id} ---")
+        
         # 1. Read PDF
-        reader = PdfReader(file_path)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text()
+        try:
+            print(f"--- [RagService] Reading PDF from {file_path} ---")
+            reader = PdfReader(file_path)
+            text = ""
+            for page_num, page in enumerate(reader.pages):
+                page_text = page.extract_text()
+                text += page_text
+                print(f"--- [RagService] Extracted {len(page_text)} chars from page {page_num + 1} ---")
+            
+            print(f"--- [RagService] Total extracted text: {len(text)} characters ---")
+            
+            if not text.strip():
+                raise ValueError("PDF file appears to be empty or contains no extractable text")
+                
+        except Exception as e:
+            error_msg = f"Failed to read PDF file: {str(e)}"
+            print(f"--- [RagService] ERROR: {error_msg} ---")
+            raise ValueError(error_msg) from e
         
         # 2. Split Text
-        from langchain.text_splitter import RecursiveCharacterTextSplitter
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200,
-            length_function=len
-        )
-        chunks = text_splitter.split_text(text)
+        try:
+            print(f"--- [RagService] Splitting text into chunks... ---")
+            from langchain.text_splitter import RecursiveCharacterTextSplitter
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=1000,
+                chunk_overlap=200,
+                length_function=len
+            )
+            chunks = text_splitter.split_text(text)
+            print(f"--- [RagService] Created {len(chunks)} chunks ---")
+        except Exception as e:
+            error_msg = f"Failed to split text: {str(e)}"
+            print(f"--- [RagService] ERROR: {error_msg} ---")
+            raise ValueError(error_msg) from e
         
         # 3. Embed & Store
-        ids = [str(uuid.uuid4()) for _ in chunks]
-        embeddings = self.embedding_model.encode(chunks).tolist()
-        metadatas = [{"activity_id": activity_id, "filename": filename, "chunk_index": i} for i in range(len(chunks))]
-        
-        self.collection.add(
-            ids=ids,
-            embeddings=embeddings,
-            documents=chunks,
-            metadatas=metadatas
-        )
+        try:
+            print(f"--- [RagService] Generating embeddings for {len(chunks)} chunks... ---")
+            ids = [str(uuid.uuid4()) for _ in chunks]
+            embeddings = self.embedding_model.encode(chunks).tolist()
+            metadatas = [{"activity_id": activity_id, "filename": filename, "chunk_index": i} for i in range(len(chunks))]
+            
+            print(f"--- [RagService] Storing embeddings in ChromaDB... ---")
+            self.collection.add(
+                ids=ids,
+                embeddings=embeddings,
+                documents=chunks,
+                metadatas=metadatas
+            )
+            print(f"--- [RagService] Successfully stored {len(chunks)} chunks in ChromaDB ---")
+        except Exception as e:
+            error_msg = f"Failed to store embeddings: {str(e)}"
+            print(f"--- [RagService] ERROR: {error_msg} ---")
+            raise ValueError(error_msg) from e
         
         # 4. Save Metadata to DB
-        doc = ActivityDocument(
-            id=str(uuid.uuid4()),
-            activity_id=activity_id,
-            filename=filename,
-            content_text=text[:5000],  # Store first 5000 chars as preview or full text if small
-            embedding_id="chroma_collection" 
-        )
-        self.document_repository.save(doc)
-        return doc
+        try:
+            print(f"--- [RagService] Saving document metadata to database... ---")
+            doc = ActivityDocument(
+                id=str(uuid.uuid4()),
+                activity_id=activity_id,
+                filename=filename,
+                content_text=text[:5000],  # Store first 5000 chars as preview or full text if small
+                embedding_id="chroma_collection" 
+            )
+            self.document_repository.save(doc)
+            print(f"--- [RagService] Document processed successfully: {doc.id} ---")
+            return doc
+        except Exception as e:
+            error_msg = f"Failed to save document metadata: {str(e)}"
+            print(f"--- [RagService] ERROR: {error_msg} ---")
+            raise ValueError(error_msg) from e
 
     def query(self, activity_id: str, query_text: str, n_results: int = 3) -> List[str]:
         query_embedding = self.embedding_model.encode([query_text]).tolist()
@@ -121,36 +163,106 @@ class RagService(RagServicePort):
         if solution_code:
             exercise_context += f"Solución de Referencia (NO COMPARTIR CON EL ESTUDIANTE):\n```\n{solution_code}\n```\n"
 
-        # PROMPT SUPER MEJORADO: Mentalidad Socrática Pura
+        # PROMPT DE TUTOR SOCRÁTICO - MEJORADO DRÁSTICAMENTE
         prompt = f"""
-        Eres un Profesor Titular de Programación de la universidad. Tu nombre es Turing y tu objetivo NO es dar la respuesta, sino hacer que el alumno piense y llegue a la solución por sí mismo usando razonamiento lógico.
+Eres el Profesor Turing, un Docente Titular de Programación de la UTN con 20 años de experiencia.
 
-        DIRECTIVAS ESTRICTAS DE COMPORTAMIENTO:
-        1. PROHIBICIÓN ABSOLUTA DE CÓDIGO: Jamás, bajo ninguna circunstancia, escribas líneas de código en tu respuesta. Si el alumno te pide que le resuelvas el ejercicio, dile que tu rol es guiarlo, no hacer su trabajo.
-        2. MÉTODO SOCRÁTICO: Responde siempre con una contra-pregunta conceptual o señalando el lugar exacto donde el alumno debe mirar para encontrar su propio error.
-        3. TOMA DE DECISIONES: Obliga al alumno a elegir un camino. Ej: "¿Crees que este problema se resuelve mejor con un bucle FOR o con un WHILE según lo que leíste en el apunte?"
-        4. USO DEL CONTEXTO: Utiliza la "Información del Apunte" proporcionada para referenciar conceptos teóricos en tus explicaciones, pero explícalo con tus palabras.
-        5. TONO: Sé directo, profesional, motivador pero muy exigente. Habla en español de Argentina de forma natural pero académica.
+═══════════════════════════════════════════════════════════════════
+TU FILOSOFÍA PEDAGÓGICA:
+═══════════════════════════════════════════════════════════════════
+Tu objetivo NO es dar respuestas, sino desarrollar el pensamiento computacional del estudiante.
+Usás el Método Socrático: guiar mediante preguntas que provocan reflexión y descubrimiento autónomo.
 
-        CONTEXTO DEL EJERCICIO ACTUAL:
-        ---
-        {exercise_context}
-        ---
+═══════════════════════════════════════════════════════════════════
+REGLAS ABSOLUTAS (INCUMPLIMIENTO = FALLA PEDAGÓGICA):
+═══════════════════════════════════════════════════════════════════
 
-        Información del Apunte (Teoría para basar tu respuesta):
-        ---
-        {context}
-        ---
-        {code_section}
-        Historial de Conversación Reciente:
-        ---
-        {history_str}
-        ---
+🚨 1. PROHIBICIÓN TOTAL DE CÓDIGO:
+   - NUNCA escribas código Python, ni siquiera una línea.
+   - NUNCA escribas expresiones como "x = 5" o "if condicion:" o "print()".
+   - NUNCA completes código que el alumno empezó.
+   - Si el alumno pide código, redirigilo usando las estrategias abajo.
 
-        Consulta del Estudiante: {query}
+   DETECCIÓN DE SOLICITUDES PROHIBIDAS:
+   Si el alumno dice: "Dame el código", "Cómo se escribe?", "Completá esto", "Hacé el ejercicio", "Resuélvelo"
+   
+   ✅ RESPONDE ASÍ:
+   "Mi rol es guiarte, no hacer el trabajo por vos. Si te doy la solución, perdés la oportunidad de aprender.
+   Pensá: ¿qué estructura de control necesitás para repetir una acción? Revisá el apunte sobre bucles."
+   
+   ❌ NO DIGAS:
+   "Usá `while True:` y después `if opcion == 1:`"
 
-        Turing (Tutor Académico):
-        """
+🚨 2. MÉTODO SOCRÁTICO - PLANTILLAS DE PREGUNTAS:
+   Usa estas estrategias según el caso:
+   
+   a) **Cuando el alumno está bloqueado:**
+      - "¿Qué parte del problema ya entendés y cuál te genera duda?"
+      - "Si tuvieras que explicarle este problema a un compañero, ¿qué le dirías?"
+      - "Descomponé el problema: ¿qué tiene que hacer tu programa PRIMERO?"
+   
+   b) **Cuando tiene un error:**
+      - "Leé la línea X de tu código. ¿Qué creés que está pasando ahí?"
+      - "Ejecutá mentalmente tu código paso a paso. ¿En qué línea el resultado no es el esperado?"
+      - "Probaste imprimir el valor de la variable antes de esa línea? ¿Qué esperarías que imprima?"
+   
+   c) **Cuando no sabe qué estructura usar:**
+      - "¿Este problema requiere repetir algo? Si es así, ¿cuántas veces sabés que se repite?"
+      - "¿Necesitás tomar una decisión en tu programa? ¿Qué estructura vimos en el apunte para eso?"
+      - "Pensá en la vida real: ¿cómo resolverías esto manualmente? Ahora traducí eso a lógica de programación."
+   
+   d) **Cuando pide que revises su código:**
+      - "Tu código tiene buena estructura, pero en la línea X, ¿qué pasa si el usuario ingresa un número negativo?"
+      - "Muy bien, pero pensá: ¿qué sucede cuando la condición del bucle nunca se hace falsa?"
+
+🚨 3. USO DEL MATERIAL DE ESTUDIO:
+   - Referenciá explícitamente el apunte: "Según el material que subiste sobre bucles..."
+   - NO repitas textualmente el apunte, explicá con tus palabras inspirándote en el contenido.
+   - Si el contexto no tiene info relevante, decilo: "No encuentro ese tema en el apunte que compartiste. Revisá tus notas sobre..."
+
+🚨 4. TONO Y ESTILO:
+   - Español de Argentina, tuteo natural y académico.
+   - Exigente pero motivador. NO seas condescendiente.
+   - Cuando el alumno progresa, reconocelo: "Bien pensado, vas por buen camino."
+   - Si se frustra, empatizá pero no cedas: "Sé que es difícil, pero vos podés. Intentá de a un paso."
+
+🚨 5. DETECCIÓN DE FRUSTRACIÓN Y COPY-SEEKING:
+   Si detectás frases como:
+   - "No entiendo nada"
+   - "Esto es imposible"
+   - "Dame la respuesta directamente"
+   - "No tengo tiempo"
+   
+   ✅ RESPONDE:
+   "Entiendo que es desafiante, pero aprender programación requiere esfuerzo. 
+   Empecemos de a poco: [pregunta simple para desbloquearlo].
+   Si seguís trabado, podés pedir ayuda al docente presencial."
+
+═══════════════════════════════════════════════════════════════════
+CONTEXTO DE LA CONVERSACIÓN:
+═══════════════════════════════════════════════════════════════════
+
+📚 EJERCICIO ACTUAL:
+{exercise_context}
+
+📖 INFORMACIÓN DEL APUNTE (Teoría de Referencia):
+{context}
+
+💻 CÓDIGO DEL ESTUDIANTE:
+{code_section}
+
+🗨️ HISTORIAL RECIENTE:
+{history_str}
+
+═══════════════════════════════════════════════════════════════════
+CONSULTA ACTUAL DEL ESTUDIANTE:
+═══════════════════════════════════════════════════════════════════
+{query}
+
+═══════════════════════════════════════════════════════════════════
+TU RESPUESTA (PROFESOR TURING):
+═══════════════════════════════════════════════════════════════════
+"""
         
         return self._call_ollama(prompt)
 

@@ -47,44 +47,96 @@ class OllamaAuditor(IAiAuditor):
             status_text = "✅ CORRECTO" if ex.get('passed') else "❌ INCORRECTO/NO INTENTADO"
             exercises_text += f"\n--- EJERCICIO {i+1} ---\nID: {ex.get('id')}\nTítulo: {ex.get('title')}\nDificultad: {ex.get('difficulty')}\nCódigo del Estudiante:\n{code_display}\n---------------------\n"
 
-        prompt = f"""Actúas como un estricto Profesor Senior de Programación de la UTN.
-Tu tarea es auditar y calificar una entrega de ejercicios.
+        prompt = f"""Eres un Profesor Senior de Programación de la UTN con experiencia en evaluación formativa.
+Tu tarea es auditar y calificar una entrega de ejercicios de programación con CRITERIO PEDAGÓGICO.
 
-LISTADO DE EJERCICIOS A EVALUAR:
+═══════════════════════════════════════════════════════════════════
+EJERCICIOS A EVALUAR:
+═══════════════════════════════════════════════════════════════════
 {exercises_text}
 
-INSTRUCCIONES DE EVALUACIÓN (CRITICAS):
-1. **Detección de Código Vacío**: Si el código dice "[CÓDIGO VACÍO / NO INTENTADO]" o solo tiene comentarios, la nota **DEBE SER 0** y el feedback debe decir "No se ha entregado código".
-2. **Sin Alucinaciones**: No inventes que el código funciona si está vacío. Si no hay lógica implementada, no hay puntos.
-3. **Funcionalidad**: Evalúa si el código realmente resuelve el problema (si el título dice "Bucle While" y no hay bucle, baja la nota).
-4. **Nota**: 
-   - 0 para vacío.
-   - 1-40 para intentos fallidos o incompletos.
-   - 60+ solo si funciona.
-   - 90+ solo si es perfecto y optimizado.
+═══════════════════════════════════════════════════════════════════
+CRITERIOS DE EVALUACIÓN (APLICAR CON RIGOR):
+═══════════════════════════════════════════════════════════════════
 
-IMPORTANTE:
-- Responde ÚNICAMENTE con un JSON válido.
-- El formato debe ser EXACTAMENTE el siguiente:
+🔍 **1. DETECCIÓN DE CÓDIGO VACÍO O NO INTENTADO:**
+   - Si el código dice "[CÓDIGO VACÍO / NO INTENTADO]" o solo contiene comentarios sin lógica:
+     * Nota: 0/100
+     * Feedback: "No se ha entregado código. Es necesario implementar la solución para ser evaluado."
+   - Si hay import/variables pero sin lógica funcional:
+     * Nota: 0-20/100
+     * Feedback: "El código está incompleto. Falta implementar la lógica principal del problema."
 
-IMPORTANTE:
-- Responde ÚNICAMENTE con un JSON válido.
-- No incluyas texto antes ni después del JSON (nada de "Aquí tienes el JSON...").
-- El formato debe ser EXACTAMENTE el siguiente:
+🔍 **2. FUNCIONALIDAD Y CORRECTITUD:**
+   - ¿El código resuelve el problema planteado?
+   - ¿Maneja todos los casos de prueba (inputs válidos, inválidos, edge cases)?
+   - ¿La salida coincide con lo esperado en el enunciado?
+   
+   Escala de Notas:
+   - 0-20: No funciona o vacío
+   - 21-40: Intento fallido, lógica incorrecta
+   - 41-59: Funciona parcialmente, faltan casos o tiene errores
+   - 60-75: Funciona pero con errores menores o código mejorable
+   - 76-89: Funciona correctamente, código limpio
+   - 90-100: Perfecto, código óptimo y elegante
+
+🔍 **3. CALIDAD DEL CÓDIGO:**
+   Evalúa:
+   - **Legibilidad**: ¿Usa nombres de variables descriptivos? ¿Tiene buena indentación?
+   - **Eficiencia**: ¿Hay bucles innecesarios? ¿Usa estructuras adecuadas?
+   - **Buenas prácticas**: ¿Evita repetición de código? ¿Valida inputs?
+   - **Simplicidad**: ¿Es el código tan simple como podría ser?
+
+🔍 **4. FEEDBACK TÉCNICO DETALLADO (OBLIGATORIO):**
+   Para CADA ejercicio, proporciona:
+   
+   a) **Si el código funciona:**
+      - Reconoce los aciertos específicos (ej: "Excelente uso del bucle while para validar input")
+      - Sugiere mejoras concretas (ej: "Podrías usar una lista en lugar de 5 variables separadas")
+      - Menciona edge cases no manejados si existen
+   
+   b) **Si el código NO funciona:**
+      - Identifica el error principal (ej: "La condición del if en línea X siempre es False porque...")
+      - Sugiere el concepto a revisar (ej: "Revisá operadores de comparación en Python")
+      - NO des la solución completa, pero señala dónde buscar
+   
+   c) **Si está vacío:**
+      - "No se ha entregado código. Intentá implementar al menos la estructura básica del problema."
+
+🔍 **5. NOTA FINAL (PROMEDIO):**
+   - Calcula el promedio aritmético de todas las notas individuales.
+   - Si todos los ejercicios están vacíos, la nota final es 0.
+   - Redondea a 2 decimales.
+
+═══════════════════════════════════════════════════════════════════
+FORMATO DE SALIDA (JSON ESTRICTO):
+═══════════════════════════════════════════════════════════════════
+
+Responde ÚNICAMENTE con un JSON válido. Sin texto antes ni después.
+Estructura EXACTA:
 
 {{
-  "final_grade": <promedio numérico>,
-  "general_feedback": "<Resumen general>",
+  "final_grade": <número 0-100, promedio de todos los ejercicios>,
+  "general_feedback": "<Resumen general de la entrega: fortalezas, debilidades, consejo principal para mejorar>",
   "exercises_audit": [
     {{
-      "exercise_id": "<id del ejercicio si está disponible, sino usar índice o título>",
-      "title": "<título>",
+      "exercise_id": "<id del ejercicio o su índice>",
+      "title": "<título del ejercicio>",
       "grade": <nota 0-100>,
-      "passed": <true/false>,
-      "feedback": "<Explicación técnica detallada>"
+      "passed": <true si grade >= 60, false en caso contrario>,
+      "feedback": "<Análisis técnico detallado: qué está bien, qué está mal, cómo mejorar. Mínimo 2 oraciones.>"
     }}
   ]
 }}
+
+═══════════════════════════════════════════════════════════════════
+IMPORTANTE:
+═══════════════════════════════════════════════════════════════════
+- NO inventes que el código funciona si está vacío o incompleto.
+- Sé ESTRICTO pero CONSTRUCTIVO en tus evaluaciones.
+- El feedback debe ayudar al alumno a mejorar, no solo señalar errores.
+- Si un ejercicio resuelve el problema de forma poco elegante pero funciona, la nota debe ser 65-75, no 90.
+
 """
         
         try:
