@@ -24,7 +24,12 @@ app.include_router(governance_router.router, prefix="/api/v1/governance", tags=[
 app.include_router(analytics_router.router, prefix="/api/v1/analytics", tags=["Analytics"])
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://ai-native-frontend.vercel.app",
+        "https://ai-native-frontend.vercel.app/"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
