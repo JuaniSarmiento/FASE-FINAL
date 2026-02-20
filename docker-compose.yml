@@ -57,9 +57,9 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/ai_native
-      - OLLAMA_BASE_URL=http://localhost:11434
-      - CHROMA_DB_HOST=chroma
-      - CHROMA_DB_PORT=8000
+      - OLLAMA_BASE_URL=http://187.77.41.214:11434
+      - chomra_db_host=chroma
+      - chomra_db_port=8000
       - SECRET_KEY=fase-final-cloud-secret-key-2024-production
       - DB_ECHO=False
       - PYTHONUNBUFFERED=1
