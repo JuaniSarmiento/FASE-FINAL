@@ -17,7 +17,7 @@ class OllamaExerciseGenerator(IExerciseGenerator):
             "http://host.docker.internal:11434",
             "http://ollama:11434", # If running in Docker with service name
             "http://172.17.0.1:11434", # Default Docker bridge gateway
-            "http://localhost:11434", # Local development
+            "http://187.77.41.214:11434", # Local development
         ]
         self.base_url = None
         self.model = "llama3"

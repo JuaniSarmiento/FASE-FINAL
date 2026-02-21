@@ -3,16 +3,19 @@
 ## Problemas Corregidos
 
 ### 1. **Configuración de Ollama**
+
 - ✅ Corregida URL de Ollama para Docker y modo local
 - ✅ Agregada detección automática de URLs disponibles
 - ✅ Verificación de modelo descargado
 
 ### 2. **Configuración de ChromaDB**
+
 - ✅ Variables de entorno configurables
 - ✅ Manejo de errores mejorado
 - ✅ Logs detallados del procesamiento de PDFs
 
 ### 3. **Variables de Entorno**
+
 - ✅ Archivo `.env` creado con configuración correcta
 
 ---
@@ -22,6 +25,7 @@
 ### Opción 1: Desarrollo Local
 
 #### 1. Instalar Ollama
+
 ```bash
 # Windows: Descargar desde https://ollama.ai
 # Linux/Mac:
@@ -29,11 +33,13 @@ curl -fsSL https://ollama.ai/install.sh | sh
 ```
 
 #### 2. Descargar el modelo
+
 ```bash
 ollama pull llama3
 ```
 
 #### 3. Iniciar servicios
+
 ```bash
 # Terminal 1: Iniciar base de datos y ChromaDB
 docker-compose up db chroma
@@ -49,9 +55,11 @@ python -m uvicorn src.infrastructure.http.main:app --reload --host 0.0.0.0 --por
 ```
 
 #### 4. Configurar `.env` para local
+
 Tu archivo `.env` ya está configurado para modo local:
+
 ```env
-OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_BASE_URL=http://187.77.41.214:11434
 CHROMA_DB_HOST=localhost
 CHROMA_DB_PORT=8001
 ```
@@ -59,7 +67,9 @@ CHROMA_DB_PORT=8001
 ### Opción 2: Docker Completo
 
 #### 1. Actualizar `.env` para Docker
+
 Si vas a ejecutar todo en Docker, actualiza `.env`:
+
 ```env
 OLLAMA_BASE_URL=http://ollama:11434
 CHROMA_DB_HOST=chroma
@@ -67,16 +77,19 @@ CHROMA_DB_PORT=8000
 ```
 
 #### 2. Iniciar servicios
+
 ```bash
 docker-compose up -d
 ```
 
 #### 3. Descargar modelo dentro del contenedor
+
 ```bash
 docker exec -it fase_final_ollama ollama pull llama3
 ```
 
 #### 4. Verificar estado
+
 ```bash
 docker-compose ps
 docker logs fase_final_backend
@@ -87,20 +100,23 @@ docker logs fase_final_backend
 ## 📋 Verificación de Configuración
 
 ### Script de Verificación
+
 ```bash
 python check_ai_services.py
 ```
 
 Este script verifica:
+
 - ✅ Ollama está corriendo
 - ✅ Modelo `llama3` está descargado
 - ✅ ChromaDB está disponible
 
 ### Salida Esperada
+
 ```
 🔍 Verificando configuración de IA para el proyecto...
 
-✅ Ollama está corriendo en http://localhost:11434
+✅ Ollama está corriendo en http://187.77.41.214:11434
 
 📦 Modelos disponibles: ['llama3', 'llama2']
 ✅ Modelo 'llama3' está disponible
@@ -122,12 +138,14 @@ ChromaDB:     ✅ OK
 ## 🧪 Probar la Generación
 
 ### 1. Desde la UI (Frontend)
+
 1. Ir a `/teacher/modules/{module_id}/create-activity`
 2. Subir un PDF
 3. Configurar parámetros (topic, dificultad, lenguaje)
 4. Click en "Generar Ejercicios con IA"
 
 ### 2. Desde API directamente
+
 ```bash
 # 1. Crear actividad
 curl -X POST http://localhost:8000/api/v1/teacher/activities \
@@ -166,9 +184,10 @@ curl -X POST http://localhost:8000/api/v1/learning/generate \
 **Causa**: Ollama no está corriendo o URL incorrecta
 
 **Solución**:
+
 ```bash
 # Verificar si Ollama está corriendo
-curl http://localhost:11434/api/tags
+curl http://187.77.41.214:11434/api/tags
 
 # Si no responde, iniciar Ollama
 ollama serve
@@ -182,6 +201,7 @@ python check_ai_services.py
 **Causa**: Modelo no descargado
 
 **Solución**:
+
 ```bash
 # Descargar modelo
 ollama pull llama3
@@ -195,6 +215,7 @@ ollama list
 **Causa**: ChromaDB no está corriendo
 
 **Solución**:
+
 ```bash
 # Iniciar ChromaDB
 docker-compose up chroma -d
@@ -208,6 +229,7 @@ curl http://localhost:8001/api/v1/heartbeat
 **Causa**: PDF corrupto o protegido
 
 **Solución**:
+
 - Asegúrate de que el PDF no esté encriptado
 - Verifica que el PDF contenga texto extraíble (no solo imágenes)
 - Prueba con otro PDF
@@ -215,6 +237,7 @@ curl http://localhost:8001/api/v1/heartbeat
 ### No se generan ejercicios (sin error explícito)
 
 **Verificar logs**:
+
 ```bash
 # Docker
 docker logs fase_final_backend -f
@@ -224,6 +247,7 @@ docker logs fase_final_backend -f
 ```
 
 **Buscar**:
+
 - `[OllamaExerciseGenerator]` - Estado de generación
 - `[RagService]` - Procesamiento de PDFs
 - `ERROR` o `EXCEPTION`

@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     
     # AI Services - Defaults for local development
     # Docker will override these via environment variables in docker-compose.yml
-    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_BASE_URL: str = "http://187.77.41.214:11434"
     CHROMA_DB_HOST: str = "localhost"
     CHROMA_DB_PORT: int = 8001
     

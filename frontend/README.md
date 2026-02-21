@@ -223,9 +223,9 @@ El `ErrorBoundary` externo captura cualquier error de JavaScript que ocurra en e
 Todas las paginas no criticas se cargan dinamicamente mediante `React.lazy()`, reduciendo el bundle inicial en aproximadamente un 60%:
 
 ```tsx
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-const TutorPage = lazy(() => import('./pages/TutorPage'));
-const SimulatorsPage = lazy(() => import('./pages/SimulatorsPage'));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const TutorPage = lazy(() => import("./pages/TutorPage"));
+const SimulatorsPage = lazy(() => import("./pages/SimulatorsPage"));
 ```
 
 Las paginas de autenticacion (`LoginPage`, `RegisterPage`) se cargan de forma sincrona para garantizar una experiencia de primer contacto fluida.
@@ -234,28 +234,28 @@ Las paginas de autenticacion (`LoginPage`, `RegisterPage`) se cargan de forma si
 
 El sistema implementa navegacion diferenciada para estudiantes y docentes. Las rutas de estudiante ocupan el espacio raiz:
 
-| Ruta | Componente | Proposito |
-|------|------------|-----------|
-| `/dashboard` | DashboardPage | Panel principal con metricas |
-| `/tutor` | TutorPage | Chat con T-IA-Cog |
-| `/training` | TrainingPage | Selector de ejercicios |
-| `/training/exam` | TrainingExamPage | Modo examen temporizado |
-| `/simulators` | SimulatorsPage | Hub de 11 simuladores |
-| `/analytics` | AnalyticsPage | Analisis de progreso |
-| `/evaluator` | EvaluatorPage | Evaluacion E-IA-Proc |
-| `/risks` | RisksPage | Analisis de riesgos AR-IA |
-| `/traceability` | TraceabilityPage | Visualizacion N4 |
-| `/git` | GitAnalyticsPage | Metricas de Git |
+| Ruta             | Componente       | Proposito                    |
+| ---------------- | ---------------- | ---------------------------- |
+| `/dashboard`     | DashboardPage    | Panel principal con metricas |
+| `/tutor`         | TutorPage        | Chat con T-IA-Cog            |
+| `/training`      | TrainingPage     | Selector de ejercicios       |
+| `/training/exam` | TrainingExamPage | Modo examen temporizado      |
+| `/simulators`    | SimulatorsPage   | Hub de 11 simuladores        |
+| `/analytics`     | AnalyticsPage    | Analisis de progreso         |
+| `/evaluator`     | EvaluatorPage    | Evaluacion E-IA-Proc         |
+| `/risks`         | RisksPage        | Analisis de riesgos AR-IA    |
+| `/traceability`  | TraceabilityPage | Visualizacion N4             |
+| `/git`           | GitAnalyticsPage | Metricas de Git              |
 
 Las rutas de docente se agrupan bajo el prefijo `/teacher`:
 
-| Ruta | Componente | Historia de Usuario |
-|------|------------|---------------------|
-| `/teacher/dashboard` | TeacherDashboardPage | HU-DOC-001 |
-| `/teacher/monitoring` | StudentMonitoringPage | HU-DOC-003 |
-| `/teacher/activities` | ActivityManagementPage | HU-DOC-005 |
-| `/teacher/reports` | ReportsPage | HU-DOC-007 |
-| `/teacher/risks` | InstitutionalRisksPage | HU-DOC-009 |
+| Ruta                  | Componente             | Historia de Usuario |
+| --------------------- | ---------------------- | ------------------- |
+| `/teacher/dashboard`  | TeacherDashboardPage   | HU-DOC-001          |
+| `/teacher/monitoring` | StudentMonitoringPage  | HU-DOC-003          |
+| `/teacher/activities` | ActivityManagementPage | HU-DOC-005          |
+| `/teacher/reports`    | ReportsPage            | HU-DOC-007          |
+| `/teacher/risks`      | InstitutionalRisksPage | HU-DOC-009          |
 
 ---
 
@@ -299,7 +299,7 @@ El hook personalizado `useAuth` utiliza el nuevo hook `use()` de React 19 para l
 export function useAuth(): AuthContextType {
   const context = use(AuthContext);
   if (context === null) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
@@ -328,7 +328,7 @@ El `uiStore` gestiona preferencias de interfaz que persisten entre sesiones:
 
 ```tsx
 interface UIState {
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   sidebarCollapsed: boolean;
   toggleTheme: () => void;
   toggleSidebar: () => void;
@@ -337,13 +337,15 @@ interface UIState {
 export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
-      theme: 'dark',
+      theme: "dark",
       sidebarCollapsed: false,
-      toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
-      toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+      toggleTheme: () =>
+        set((s) => ({ theme: s.theme === "dark" ? "light" : "dark" })),
+      toggleSidebar: () =>
+        set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
     }),
-    { name: 'ui-storage' }
-  )
+    { name: "ui-storage" },
+  ),
 );
 ```
 
@@ -424,17 +426,17 @@ El jitter (variacion aleatoria) previene el "thundering herd problem" donde mult
 
 Cada dominio del sistema tiene un servicio dedicado que encapsula las operaciones de API:
 
-| Servicio | Responsabilidad |
-|----------|-----------------|
-| `sessionsService` | Ciclo de vida de sesiones de aprendizaje |
-| `interactionsService` | Envio y recepcion de mensajes con IA |
-| `tracesService` | Consulta de trazabilidad cognitiva |
-| `risksService` | Analisis de riesgos 5D |
-| `trainingService` | Entrenador Digital (V1 + V2 con N4) |
-| `simulatorsService` | Operaciones de simuladores S-IA-X |
-| `evaluationsService` | Evaluaciones E-IA-Proc |
-| `reportsService` | Generacion de reportes docentes |
-| `institutionalRisksService` | Gestion de alertas y planes de remediacion |
+| Servicio                     | Responsabilidad                                         |
+| ---------------------------- | ------------------------------------------------------- |
+| `sessionsService`            | Ciclo de vida de sesiones de aprendizaje                |
+| `interactionsService`        | Envio y recepcion de mensajes con IA                    |
+| `tracesService`              | Consulta de trazabilidad cognitiva                      |
+| `risksService`               | Analisis de riesgos 5D                                  |
+| `trainingService`            | Entrenador Digital (V1 + V2 con N4)                     |
+| `simulatorsService`          | Operaciones de simuladores S-IA-X                       |
+| `evaluationsService`         | Evaluaciones E-IA-Proc                                  |
+| `reportsService`             | Generacion de reportes docentes                         |
+| `institutionalRisksService`  | Gestion de alertas y planes de remediacion              |
 | `teacherTraceabilityService` | Trazabilidad N4 de estudiantes para docentes (Cortez63) |
 
 ### Training Service V2 (Cortez55)
@@ -465,9 +467,10 @@ Las paginas del docente siguen el mismo patron arquitectonico que el resto del f
 
 ```tsx
 const isTeacher = user?.roles?.some(
-  (role: string) => role.toLowerCase() === 'teacher' ||
-                    role.toLowerCase() === 'docente' ||
-                    role.toLowerCase() === 'admin'
+  (role: string) =>
+    role.toLowerCase() === "teacher" ||
+    role.toLowerCase() === "docente" ||
+    role.toLowerCase() === "admin",
 );
 ```
 
@@ -480,19 +483,21 @@ El panel principal del docente proporciona una vision consolidada del estado de 
 
 ```tsx
 const [alertsRes, analyticsRes, riskRes] = await Promise.allSettled([
-  apiClient.get<{ data: AlertsResponse }>('/teacher/alerts'),
-  reportsService.getLearningAnalytics('month'),
+  apiClient.get<{ data: AlertsResponse }>("/teacher/alerts"),
+  reportsService.getLearningAnalytics("month"),
   institutionalRisksService.getDashboard(),
 ]);
 ```
 
 **Metricas principales mostradas:**
+
 - Estudiantes activos este mes
 - Sesiones totales con duracion promedio
 - Alertas activas (con indicador de criticas)
 - Riesgos pendientes y resueltos esta semana
 
 **Acciones rapidas:**
+
 - Monitoreo en Vivo: Ver estudiantes activos en tiempo real
 - Generar Reportes: Reportes de cohorte y rendimiento
 - Gestion de Riesgos: Alertas y planes de remediacion
@@ -510,6 +515,7 @@ const [alertsRes, analyticsRes, riskRes] = await Promise.allSettled([
 Esta pagina permite al docente supervisar estudiantes activos y responder a situaciones que requieren intervencion. Implementa tres vistas seleccionables mediante tabs:
 
 **Vista de Alertas**: Lista todas las alertas de estudiantes con filtros por severidad (critical, high, medium). Cada alerta muestra:
+
 - ID del estudiante y severidad
 - Razones de la alerta (ej: "Dependencia excesiva de IA", "Sesion muy larga")
 - Metricas: duracion, interacciones totales, dependencia de IA
@@ -517,6 +523,7 @@ Esta pagina permite al docente supervisar estudiantes activos y responder a situ
 - Boton "Atender" para reconocer la alerta
 
 **Vista de Sesiones Activas**: Lista en tiempo real todas las sesiones activas con:
+
 - ID del estudiante
 - Modo de sesion (TUTOR, SIMULATOR, TRAINING)
 - Actividad en la que trabaja
@@ -524,6 +531,7 @@ Esta pagina permite al docente supervisar estudiantes activos y responder a situ
 - Numero de trazas generadas
 
 **Vista de Comparacion**: Permite comparar el rendimiento de multiples estudiantes en una misma actividad. Ingresando un ID de actividad, muestra:
+
 - Estadisticas agregadas (promedio de duracion, interacciones, dependencia IA)
 - Tabla detallada por estudiante con estado, duracion, interacciones, dependencia IA, riesgos
 - Riesgos mas frecuentes en la cohorte
@@ -539,6 +547,7 @@ Esta pagina permite al docente supervisar estudiantes activos y responder a situ
 Permite a los docentes crear, editar y administrar actividades de aprendizaje. Las actividades pasan por un ciclo de vida de estados: `draft` → `active` → `archived`.
 
 **Operaciones CRUD completas:**
+
 - **Crear**: Modal con campos para ID, titulo, descripcion, instrucciones, materia, dificultad, duracion estimada y etiquetas
 - **Editar**: Mismos campos (excepto ID que es inmutable)
 - **Clonar**: Duplica una actividad existente con nuevo ID
@@ -547,15 +556,16 @@ Permite a los docentes crear, editar y administrar actividades de aprendizaje. L
 - **Eliminar**: Elimina permanentemente (con confirmacion)
 
 **Configuracion de Politicas de IA**: Cada actividad puede configurar restricciones pedagogicas:
+
 ```tsx
 const defaultPolicies: PolicyConfig = {
-  max_help_level: HelpLevel.MEDIO,         // MINIMO, BAJO, MEDIO, ALTO
-  block_complete_solutions: true,          // Bloquear solicitudes de codigo completo
-  require_justification: true,             // Exigir que estudiante explique decisiones
-  allow_code_snippets: true,               // Permitir fragmentos de codigo en respuestas
+  max_help_level: HelpLevel.MEDIO, // MINIMO, BAJO, MEDIO, ALTO
+  block_complete_solutions: true, // Bloquear solicitudes de codigo completo
+  require_justification: true, // Exigir que estudiante explique decisiones
+  allow_code_snippets: true, // Permitir fragmentos de codigo en respuestas
   risk_thresholds: {
-    cognitive_delegation: 0.7,             // Umbral de riesgo de delegacion cognitiva
-    ai_dependency: 0.6                     // Umbral de dependencia de IA
+    cognitive_delegation: 0.7, // Umbral de riesgo de delegacion cognitiva
+    ai_dependency: 0.6, // Umbral de dependencia de IA
   },
 };
 ```
@@ -570,6 +580,7 @@ Estas politicas son enviadas al backend y aplicadas por el agente de gobernanza 
 Los docentes pueden generar tres tipos de reportes:
 
 **Reporte de Cohorte**: Analiza el desempeño agregado de un grupo de estudiantes en un curso durante un periodo especifico. Parametros:
+
 - ID del curso
 - Lista de IDs de estudiantes (opcional)
 - Fecha de inicio y fin del periodo
@@ -578,6 +589,7 @@ Los docentes pueden generar tres tipos de reportes:
 **Dashboard de Riesgos**: Genera un reporte con la distribucion de riesgos detectados, alertas pendientes, y metricas de integridad academica.
 
 **Analiticas de Aprendizaje**: Muestra metricas generales como:
+
 - Total de estudiantes y sesiones
 - Duracion promedio de sesiones
 - Distribucion de uso por agente de IA
@@ -593,25 +605,28 @@ Los docentes pueden generar tres tipos de reportes:
 Pagina dedicada a la gestion de riesgos a nivel institucional, con tres vistas:
 
 **Dashboard de Riesgos**: Panel con metricas agregadas:
+
 - Alertas pendientes por severidad
 - Alertas resueltas esta semana
 - Tendencia de riesgos en el tiempo
 - Tipos de riesgo mas frecuentes
 
 **Lista de Alertas**: Todas las alertas con filtros avanzados:
+
 - Filtro por severidad: critical, high, medium, low
 - Filtro por estado: pending, acknowledged, resolved
 - Acciones: Reconocer, Resolver, Ver detalles
 
 **Planes de Remediacion**: Permite crear planes de accion para estudiantes en riesgo:
+
 ```tsx
 const remediationForm = {
-  student_id: '',              // ID del estudiante
-  title: '',                   // Titulo del plan
-  description: '',             // Descripcion detallada
-  plan_type: 'standard',       // Tipo de plan
-  start_date: '',              // Fecha de inicio
-  target_end_date: '',         // Fecha objetivo de finalizacion
+  student_id: "", // ID del estudiante
+  title: "", // Titulo del plan
+  description: "", // Descripcion detallada
+  plan_type: "standard", // Tipo de plan
+  start_date: "", // Fecha de inicio
+  target_end_date: "", // Fecha objetivo de finalizacion
 };
 ```
 
@@ -619,32 +634,32 @@ const remediationForm = {
 
 Los servicios que soportan las funcionalidades del docente estan en `services/api/`:
 
-| Servicio | Responsabilidad |
-|----------|-----------------|
-| `reportsService` | Generacion de reportes de cohorte, riesgos y analiticas |
-| `institutionalRisksService` | Dashboard de riesgos, alertas, planes de remediacion |
-| `activitiesService` | CRUD de actividades, publicar, archivar, clonar |
+| Servicio                    | Responsabilidad                                         |
+| --------------------------- | ------------------------------------------------------- |
+| `reportsService`            | Generacion de reportes de cohorte, riesgos y analiticas |
+| `institutionalRisksService` | Dashboard de riesgos, alertas, planes de remediacion    |
+| `activitiesService`         | CRUD de actividades, publicar, archivar, clonar         |
 
 ### 8.8 Endpoints del Backend Utilizados
 
-| Endpoint | Metodo | Proposito |
-|----------|--------|-----------|
-| `/teacher/alerts` | GET | Lista alertas de estudiantes |
-| `/teacher/alerts/{id}/acknowledge` | POST | Reconocer una alerta |
-| `/teacher/students/compare` | GET | Comparar estudiantes en actividad |
-| `/activities` | GET/POST | Listar/Crear actividades |
-| `/activities/{id}` | PUT/DELETE | Actualizar/Eliminar actividad |
-| `/activities/{id}/publish` | POST | Publicar actividad (draft → active) |
-| `/activities/{id}/archive` | POST | Archivar actividad |
-| `/reports/cohort` | POST | Generar reporte de cohorte |
-| `/reports/analytics` | GET | Analiticas de aprendizaje |
-| `/admin/risks/dashboard` | GET | Dashboard de riesgos institucionales |
-| `/admin/risks/alerts` | GET | Lista de alertas de riesgo |
-| `/admin/risks/scan` | POST | Ejecutar escaneo de riesgos |
-| `/admin/risks/remediation` | POST | Crear plan de remediacion |
-| `/teacher/students/{id}/traceability` | GET | Trazabilidad N4 de estudiante |
-| `/teacher/students/{id}/cognitive-path` | GET | Camino cognitivo de estudiante |
-| `/teacher/traceability/summary` | GET | Resumen global de trazabilidad |
+| Endpoint                                | Metodo     | Proposito                            |
+| --------------------------------------- | ---------- | ------------------------------------ |
+| `/teacher/alerts`                       | GET        | Lista alertas de estudiantes         |
+| `/teacher/alerts/{id}/acknowledge`      | POST       | Reconocer una alerta                 |
+| `/teacher/students/compare`             | GET        | Comparar estudiantes en actividad    |
+| `/activities`                           | GET/POST   | Listar/Crear actividades             |
+| `/activities/{id}`                      | PUT/DELETE | Actualizar/Eliminar actividad        |
+| `/activities/{id}/publish`              | POST       | Publicar actividad (draft → active)  |
+| `/activities/{id}/archive`              | POST       | Archivar actividad                   |
+| `/reports/cohort`                       | POST       | Generar reporte de cohorte           |
+| `/reports/analytics`                    | GET        | Analiticas de aprendizaje            |
+| `/admin/risks/dashboard`                | GET        | Dashboard de riesgos institucionales |
+| `/admin/risks/alerts`                   | GET        | Lista de alertas de riesgo           |
+| `/admin/risks/scan`                     | POST       | Ejecutar escaneo de riesgos          |
+| `/admin/risks/remediation`              | POST       | Crear plan de remediacion            |
+| `/teacher/students/{id}/traceability`   | GET        | Trazabilidad N4 de estudiante        |
+| `/teacher/students/{id}/cognitive-path` | GET        | Camino cognitivo de estudiante       |
+| `/teacher/traceability/summary`         | GET        | Resumen global de trazabilidad       |
 
 ### 8.9 Trazabilidad N4 para Docentes (Cortez63)
 
@@ -689,6 +704,7 @@ El servicio define tipos TypeScript completos para representar la informacion de
 El componente [StudentTraceabilityViewer](src/components/teacher/StudentTraceabilityViewer.tsx) permite a los docentes examinar en profundidad la trazabilidad de un estudiante individual. Se organiza en tres pestañas:
 
 **Pestaña Resumen (Overview)**: Muestra una vision consolidada del estudiante con cuatro metricas clave:
+
 - Total de trazas N4 generadas
 - Promedio de involucramiento de IA (porcentaje)
 - Numero de estados cognitivos unicos alcanzados
@@ -697,6 +713,7 @@ El componente [StudentTraceabilityViewer](src/components/teacher/StudentTraceabi
 - Distribucion de tipos de interaccion
 
 **Pestaña Trazas**: Lista paginada de todas las trazas del estudiante con detalles expandibles:
+
 - Nivel de traza (N1-N4) con codigo de color
 - Estado cognitivo actual
 - Tipo de interaccion
@@ -706,6 +723,7 @@ El componente [StudentTraceabilityViewer](src/components/teacher/StudentTraceabi
 - Justificacion de decisiones (cuando esta disponible)
 
 **Pestaña Camino Cognitivo**: Visualiza la secuencia temporal de estados cognitivos:
+
 - Timeline vertical de transiciones entre estados
 - Tiempo acumulado en cada estado
 - Insights automaticos sobre patrones de comportamiento
@@ -716,6 +734,7 @@ El componente [StudentTraceabilityViewer](src/components/teacher/StudentTraceabi
 La pagina de monitoreo de estudiantes [StudentMonitoringPage](src/pages/StudentMonitoringPage.tsx) incorpora una nueva pestaña "Trazabilidad N4" que proporciona:
 
 **Panel de estadisticas globales:**
+
 - Total de estudiantes monitoreados
 - Total de trazas N4 capturadas
 - Porcentaje de estudiantes con alta dependencia de IA
@@ -723,10 +742,12 @@ La pagina de monitoreo de estudiantes [StudentMonitoringPage](src/pages/StudentM
 **Distribucion de estados cognitivos**: Grafico de barras mostrando cuantos estudiantes se encuentran en cada estado cognitivo, permitiendo identificar patrones globales como exceso de estudiantes en estado ESTANCAMIENTO.
 
 **Sistema de alertas**: Las alertas automaticas se muestran con severidad codificada por color:
+
 - Alertas criticas (rojo) para patrones que requieren intervencion inmediata
 - Alertas de advertencia (amarillo) para patrones que merecen atencion
 
 **Clasificacion por dependencia de IA**: Los estudiantes se agrupan en tres categorias:
+
 - Alta dependencia (>70%): Estudiantes que delegan excesivamente en la IA
 - Dependencia media (40-70%): Uso equilibrado de asistencia
 - Baja dependencia (<40%): Trabajo predominantemente autonomo
@@ -742,6 +763,7 @@ El panel principal del docente [TeacherDashboardPage](src/pages/TeacherDashboard
 **Nueva accion rapida**: "Trazabilidad N4" permite navegar directamente a la pestaña de trazabilidad en la pagina de monitoreo con un click.
 
 **Seccion de Trazabilidad Cognitiva N4**: Panel dedicado al final del dashboard que incluye:
+
 - Grafico de distribucion de estados cognitivos globales usando barras horizontales con colores diferenciados para cada estado
 - Grafico de distribucion de dependencia de IA mostrando el porcentaje de estudiantes en cada categoria (alta, media, baja)
 - Indicadores numericos con el total de estudiantes en cada nivel de dependencia
@@ -752,21 +774,21 @@ Esta integracion permite a los docentes obtener una vista rapida del estado cogn
 
 **Backend** (3 nuevos endpoints en [teacher_tools.py](../backend/api/routers/teacher_tools.py)):
 
-| Endpoint | Proposito | Capacidades |
-|----------|-----------|-------------|
-| `GET /teacher/students/{student_id}/traceability` | Trazabilidad completa de un estudiante | Muestra todas las trazas N4 con filtros por actividad. Incluye distribucion de estados cognitivos, niveles de traza, tipos de interaccion. Calcula promedio de dependencia de IA. Soporta paginacion. |
-| `GET /teacher/students/{student_id}/cognitive-path` | Camino cognitivo del estudiante | Visualiza la evolucion cognitiva a traves de transiciones de estado. Calcula tiempo en cada estado. Genera insights automaticos (alertas de estancamiento, patrones). |
-| `GET /teacher/traceability/summary` | Resumen global de trazabilidad | Distribucion de estados cognitivos de todos los estudiantes. Clasificacion por dependencia de IA (alta/media/baja). Alertas de trazabilidad (alta dependencia, estancamiento frecuente). |
+| Endpoint                                            | Proposito                              | Capacidades                                                                                                                                                                                           |
+| --------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /teacher/students/{student_id}/traceability`   | Trazabilidad completa de un estudiante | Muestra todas las trazas N4 con filtros por actividad. Incluye distribucion de estados cognitivos, niveles de traza, tipos de interaccion. Calcula promedio de dependencia de IA. Soporta paginacion. |
+| `GET /teacher/students/{student_id}/cognitive-path` | Camino cognitivo del estudiante        | Visualiza la evolucion cognitiva a traves de transiciones de estado. Calcula tiempo en cada estado. Genera insights automaticos (alertas de estancamiento, patrones).                                 |
+| `GET /teacher/traceability/summary`                 | Resumen global de trazabilidad         | Distribucion de estados cognitivos de todos los estudiantes. Clasificacion por dependencia de IA (alta/media/baja). Alertas de trazabilidad (alta dependencia, estancamiento frecuente).              |
 
 **Frontend** (nuevos archivos y modificaciones):
 
-| Archivo | Tipo | Descripcion |
-|---------|------|-------------|
-| [teacherTraceability.service.ts](src/services/api/teacherTraceability.service.ts) | Nuevo | Servicio con tipos TypeScript y metodos para los 3 endpoints |
-| [StudentTraceabilityViewer.tsx](src/components/teacher/StudentTraceabilityViewer.tsx) | Nuevo | Componente con 3 tabs (Resumen, Trazas, Camino Cognitivo) |
-| [StudentMonitoringPage.tsx](src/pages/StudentMonitoringPage.tsx) | Modificado | Nueva pestaña "Trazabilidad N4" con estadisticas y alertas |
-| [TeacherDashboardPage.tsx](src/pages/TeacherDashboardPage.tsx) | Modificado | Nueva tarjeta de stats, accion rapida, seccion de graficos |
-| [services/api/index.ts](src/services/api/index.ts) | Modificado | Export del nuevo servicio y tipos |
+| Archivo                                                                               | Tipo       | Descripcion                                                  |
+| ------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------ |
+| [teacherTraceability.service.ts](src/services/api/teacherTraceability.service.ts)     | Nuevo      | Servicio con tipos TypeScript y metodos para los 3 endpoints |
+| [StudentTraceabilityViewer.tsx](src/components/teacher/StudentTraceabilityViewer.tsx) | Nuevo      | Componente con 3 tabs (Resumen, Trazas, Camino Cognitivo)    |
+| [StudentMonitoringPage.tsx](src/pages/StudentMonitoringPage.tsx)                      | Modificado | Nueva pestaña "Trazabilidad N4" con estadisticas y alertas   |
+| [TeacherDashboardPage.tsx](src/pages/TeacherDashboardPage.tsx)                        | Modificado | Nueva tarjeta de stats, accion rapida, seccion de graficos   |
+| [services/api/index.ts](src/services/api/index.ts)                                    | Modificado | Export del nuevo servicio y tipos                            |
 
 ---
 
@@ -779,6 +801,7 @@ Cada modulo de `features/` encapsula una funcionalidad completa con sus propios 
 El Entrenador Digital guia a los estudiantes a traves de ejercicios estructurados con evaluacion automatica y feedback pedagogico.
 
 **Componentes principales:**
+
 - `ExercisePanel`: Muestra el enunciado, ejemplos y casos de prueba
 - `CodeEditorPanel`: Editor Monaco con syntax highlighting
 - `HintDisplay`: Pistas estaticas y correcciones de IA
@@ -790,6 +813,7 @@ El Entrenador Digital guia a los estudiantes a traves de ejercicios estructurado
 - `FinalResults`: Resumen de sesion completada
 
 **Hooks:**
+
 - `useTrainingSession`: Gestion completa del ciclo de vida del entrenamiento
 - `useTimer`: Temporizador para modo examen
 
@@ -816,6 +840,7 @@ export function useTrainingSession(params: TrainingSessionParams): UseTrainingSe
 La interfaz de chat permite conversaciones naturales con el tutor cognitivo, adaptando su estilo pedagogico segun el contexto.
 
 **Componentes:**
+
 - `TutorHeader`: Informacion de sesion y modo activo
 - `ChatMessageBubble`: Mensajes con soporte Markdown
 - `ChatInput`: Campo de entrada con historial
@@ -823,6 +848,7 @@ La interfaz de chat permite conversaciones naturales con el tutor cognitivo, ada
 - `TypingIndicator`: Indicador de respuesta en progreso
 
 **Hooks:**
+
 - `useTutorSession`: Gestion de la sesion de tutoria
 - `useRiskAnalysis`: Monitoreo de riesgos en tiempo real
 - `useTraceability`: Consulta de trazabilidad cognitiva
@@ -835,17 +861,29 @@ Los simuladores profesionales ofrecen escenarios inmersivos que replican situaci
 
 ```tsx
 const SIMULATOR_CONFIG = {
-  product_owner: { icon: '(clipboard)', color: '#10b981', name: 'Product Owner' },
-  scrum_master: { icon: '(target)', color: '#f59e0b', name: 'Scrum Master' },
-  tech_interviewer: { icon: '(briefcase)', color: '#3b82f6', name: 'Entrevistador Tecnico' },
-  incident_responder: { icon: '(alert)', color: '#ef4444', name: 'Incident Response' },
-  devsecops: { icon: '(lock)', color: '#8b5cf6', name: 'DevSecOps' },
-  client: { icon: '(handshake)', color: '#ec4899', name: 'Cliente' },
-  code_reviewer: { icon: '(eye)', color: '#14b8a6', name: 'Code Reviewer' },
-  architect: { icon: '(building)', color: '#6366f1', name: 'Arquitecto' },
-  qa_engineer: { icon: '(flask)', color: '#84cc16', name: 'QA Engineer' },
-  mentor: { icon: '(teacher)', color: '#f97316', name: 'Mentor Senior' },
-  stakeholder: { icon: '(chart)', color: '#06b6d4', name: 'Stakeholder' },
+  product_owner: {
+    icon: "(clipboard)",
+    color: "#10b981",
+    name: "Product Owner",
+  },
+  scrum_master: { icon: "(target)", color: "#f59e0b", name: "Scrum Master" },
+  tech_interviewer: {
+    icon: "(briefcase)",
+    color: "#3b82f6",
+    name: "Entrevistador Tecnico",
+  },
+  incident_responder: {
+    icon: "(alert)",
+    color: "#ef4444",
+    name: "Incident Response",
+  },
+  devsecops: { icon: "(lock)", color: "#8b5cf6", name: "DevSecOps" },
+  client: { icon: "(handshake)", color: "#ec4899", name: "Cliente" },
+  code_reviewer: { icon: "(eye)", color: "#14b8a6", name: "Code Reviewer" },
+  architect: { icon: "(building)", color: "#6366f1", name: "Arquitecto" },
+  qa_engineer: { icon: "(flask)", color: "#84cc16", name: "QA Engineer" },
+  mentor: { icon: "(teacher)", color: "#f97316", name: "Mentor Senior" },
+  stakeholder: { icon: "(chart)", color: "#06b6d4", name: "Stakeholder" },
 };
 ```
 
@@ -860,6 +898,7 @@ El analizador de riesgos evalua cinco dimensiones de riesgo en el uso de IA educ
 5. **Gobernanza**: Ausencia de politicas y auditoria
 
 **Componentes:**
+
 - `RiskAnalyzer`: Panel principal de analisis
 - `DimensionCard`: Visualizacion de cada dimension con indicadores
 
@@ -867,14 +906,15 @@ El analizador de riesgos evalua cinco dimensiones de riesgo en el uso de IA educ
 
 La visualizacion de trazabilidad muestra el recorrido de los datos a traves de los cuatro niveles de procesamiento:
 
-| Nivel | Nombre | Descripcion |
-|-------|--------|-------------|
-| N1 | Raw Data | Datos crudos del usuario (input original) |
-| N2 | Preprocessed | Validacion, limpieza, tokenizacion |
-| N3 | LLM Processing | Inferencia del modelo de lenguaje |
-| N4 | Postprocessed | Formateo, enriquecimiento, output final |
+| Nivel | Nombre         | Descripcion                               |
+| ----- | -------------- | ----------------------------------------- |
+| N1    | Raw Data       | Datos crudos del usuario (input original) |
+| N2    | Preprocessed   | Validacion, limpieza, tokenizacion        |
+| N3    | LLM Processing | Inferencia del modelo de lenguaje         |
+| N4    | Postprocessed  | Formateo, enriquecimiento, output final   |
 
 **Componentes:**
+
 - `TraceabilityViewer`: Panel principal con seleccion de sesiones
 - `TraceNodeCard`: Visualizacion expandible de cada nodo
 - `Timeline`: Secuencia temporal de eventos
@@ -891,30 +931,30 @@ El archivo `enums.ts` contiene todas las enumeraciones del sistema:
 
 ```tsx
 export enum SessionMode {
-  TUTOR = 'TUTOR',
-  EVALUATOR = 'EVALUATOR',
-  SIMULATOR = 'SIMULATOR',
-  AUTONOMOUS = 'AUTONOMOUS',
-  TRAINING = 'TRAINING',
+  TUTOR = "TUTOR",
+  EVALUATOR = "EVALUATOR",
+  SIMULATOR = "SIMULATOR",
+  AUTONOMOUS = "AUTONOMOUS",
+  TRAINING = "TRAINING",
 }
 
 export enum CognitiveState {
-  INICIO = 'INICIO',
-  EXPLORACION = 'EXPLORACION',
-  IMPLEMENTACION = 'IMPLEMENTACION',
-  DEPURACION = 'DEPURACION',
-  CAMBIO_ESTRATEGIA = 'CAMBIO_ESTRATEGIA',
-  VALIDACION = 'VALIDACION',
-  ESTANCAMIENTO = 'ESTANCAMIENTO',
-  REFLEXION = 'REFLEXION',
+  INICIO = "INICIO",
+  EXPLORACION = "EXPLORACION",
+  IMPLEMENTACION = "IMPLEMENTACION",
+  DEPURACION = "DEPURACION",
+  CAMBIO_ESTRATEGIA = "CAMBIO_ESTRATEGIA",
+  VALIDACION = "VALIDACION",
+  ESTANCAMIENTO = "ESTANCAMIENTO",
+  REFLEXION = "REFLEXION",
 }
 
 export enum RiskLevel {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  CRITICAL = 'critical',
-  INFO = 'info',
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  CRITICAL = "critical",
+  INFO = "info",
 }
 ```
 
@@ -944,7 +984,7 @@ import {
   type SessionResponse,
   type InteractionCreate,
   type CognitiveTrace,
-} from '@/types/domain';
+} from "@/types/domain";
 ```
 
 ---
@@ -961,8 +1001,8 @@ El sistema de notificaciones implementa un contexto con hook personalizado:
 const { showToast } = useToast();
 
 // Tipos de toast: 'success', 'error', 'warning', 'info'
-showToast('Operacion completada', 'success');
-showToast('Error de conexion', 'error', 10000); // duracion personalizada
+showToast("Operacion completada", "success");
+showToast("Error de conexion", "error", 10000); // duracion personalizada
 ```
 
 Las notificaciones aparecen en la esquina superior derecha con animaciones de entrada/salida y auto-dismissal configurable.
@@ -1002,10 +1042,11 @@ Indicador de carga consistente en todo el sistema:
 Los archivos en `shared/config/` centralizan valores constantes:
 
 **labels.config.ts**: Etiquetas de UI para enumeraciones
+
 ```tsx
 export const RiskTypeLabels: Record<RiskType, string> = {
-  [RiskType.COPY_PASTE]: 'Copia y Pega',
-  [RiskType.OVER_RELIANCE]: 'Sobre-dependencia',
+  [RiskType.COPY_PASTE]: "Copia y Pega",
+  [RiskType.OVER_RELIANCE]: "Sobre-dependencia",
   // ...
 };
 ```
@@ -1056,7 +1097,7 @@ const {
   submitExercise,
   resetSession,
 } = useTrainingSession({
-  language: 'python',
+  language: "python",
   unit_number: 1,
   useV2: true,
 });
@@ -1135,7 +1176,7 @@ Todos los contextos del proyecto utilizan este patron a traves de hooks personal
 export function useAuth(): AuthContextType {
   const context = use(AuthContext);
   if (context === null) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
@@ -1162,12 +1203,12 @@ Esta aproximacion ofrece mejor inferencia de tipos y evita la inyeccion implicit
 Los componentes pesados se cargan de forma diferida:
 
 ```tsx
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 
 // En el router
 <Suspense fallback={<PageLoadingFallback />}>
   <DashboardPage />
-</Suspense>
+</Suspense>;
 ```
 
 ---
@@ -1197,15 +1238,15 @@ El menu de usuario se cierra con la tecla Escape:
 
 ```tsx
 const handleKeyDown = useCallback((event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
+  if (event.key === "Escape") {
     setUserMenuOpen(false);
   }
 }, []);
 
 useEffect(() => {
   if (userMenuOpen) {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }
 }, [userMenuOpen, handleKeyDown]);
 ```
@@ -1215,10 +1256,7 @@ useEffect(() => {
 Los botones de iconos incluyen etiquetas descriptivas:
 
 ```tsx
-<button
-  aria-label="Notificaciones"
-  className="..."
->
+<button aria-label="Notificaciones" className="...">
   <Bell className="w-5 h-5" aria-hidden="true" />
   <span className="..." aria-label="Hay notificaciones sin leer"></span>
 </button>
@@ -1230,12 +1268,18 @@ Todas las listas dinamicas utilizan keys unicos en lugar de indices (correccion 
 
 ```tsx
 // Evitado
-{items.map((item, index) => <Item key={index} />)}
+{
+  items.map((item, index) => <Item key={index} />);
+}
 
 // Implementado
-{items.map((item) => <Item key={item.id} />)}
+{
+  items.map((item) => <Item key={item.id} />);
+}
 // o cuando no hay ID
-{items.map((item) => <Item key={`${node.id}-transform-${item.name}`} />)}
+{
+  items.map((item) => <Item key={`${node.id}-transform-${item.name}`} />);
+}
 ```
 
 ---
@@ -1274,7 +1318,9 @@ Los componentes que realizan calculos costosos utilizan `useMemo`:
 
 ```tsx
 const sortedRisks = useMemo(() => {
-  return [...risks].sort((a, b) => severityOrder[b.severity] - severityOrder[a.severity]);
+  return [...risks].sort(
+    (a, b) => severityOrder[b.severity] - severityOrder[a.severity],
+  );
 }, [risks]);
 
 const progressPercentage = useMemo(() => {
@@ -1309,11 +1355,11 @@ El lazy loading reduce el bundle inicial de ~500KB a ~200KB, mejorando significa
 
 ### Stack de Testing
 
-| Herramienta | Proposito |
-|-------------|-----------|
-| Vitest | Unit testing con API compatible con Jest |
-| Testing Library | Testing de componentes React |
-| Playwright | E2E testing cross-browser |
+| Herramienta     | Proposito                                |
+| --------------- | ---------------------------------------- |
+| Vitest          | Unit testing con API compatible con Jest |
+| Testing Library | Testing de componentes React             |
+| Playwright      | E2E testing cross-browser                |
 
 ### Scripts de Testing
 
@@ -1334,6 +1380,7 @@ npm run lint          # Verificar con --max-warnings 0
 ```
 
 La configuracion incluye:
+
 - `eslint-plugin-react-hooks` para verificar reglas de hooks
 - `eslint-plugin-react-refresh` para compatibilidad con HMR
 - Reglas TypeScript estrictas via `typescript-eslint`
@@ -1356,7 +1403,7 @@ Crear `.env` basado en `.env.example`:
 
 ```env
 VITE_API_URL=http://localhost:8000/api/v1
-VITE_OLLAMA_URL=http://localhost:11434
+VITE_OLLAMA_URL=http://187.77.41.214:11434
 VITE_ENABLE_DEV_TOOLS=true
 ```
 
@@ -1422,16 +1469,16 @@ docker-compose up -d frontend
 
 ## Historial de Auditorias
 
-| Auditoria | Fecha | Cambios Principales |
-|-----------|-------|---------------------|
-| Cortez63 | Enero 2026 | Trazabilidad N4 para Docentes: 3 endpoints backend, teacherTraceabilityService, StudentTraceabilityViewer, integracion en Dashboard y Monitoring |
-| Cortez60 | Enero 2026 | Accesibilidad (role/aria), keys unicos, limpieza ESLint |
-| Cortez55 | Enero 2026 | V2 Training con N4, 4 nuevos componentes |
-| Cortez48 | Diciembre 2025 | 28 React.FC -> function, ErrorBoundaryWithNavigation |
-| Cortez43 | Diciembre 2025 | Modularizacion de tipos y features |
-| Cortez40 | Diciembre 2025 | Lazy loading, useMemo/useCallback |
-| Cortez31 | Noviembre 2025 | Migracion Context -> Zustand |
-| Cortez28 | Noviembre 2025 | Migracion React 18 -> React 19 |
+| Auditoria | Fecha          | Cambios Principales                                                                                                                              |
+| --------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Cortez63  | Enero 2026     | Trazabilidad N4 para Docentes: 3 endpoints backend, teacherTraceabilityService, StudentTraceabilityViewer, integracion en Dashboard y Monitoring |
+| Cortez60  | Enero 2026     | Accesibilidad (role/aria), keys unicos, limpieza ESLint                                                                                          |
+| Cortez55  | Enero 2026     | V2 Training con N4, 4 nuevos componentes                                                                                                         |
+| Cortez48  | Diciembre 2025 | 28 React.FC -> function, ErrorBoundaryWithNavigation                                                                                             |
+| Cortez43  | Diciembre 2025 | Modularizacion de tipos y features                                                                                                               |
+| Cortez40  | Diciembre 2025 | Lazy loading, useMemo/useCallback                                                                                                                |
+| Cortez31  | Noviembre 2025 | Migracion Context -> Zustand                                                                                                                     |
+| Cortez28  | Noviembre 2025 | Migracion React 18 -> React 19                                                                                                                   |
 
 ---
 

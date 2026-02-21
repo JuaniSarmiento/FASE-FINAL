@@ -18,6 +18,7 @@ bash fix_cloud.sh
 ```
 
 El script automáticamente:
+
 - ✅ Detiene servicios
 - ✅ Reconstruye el backend
 - ✅ Verifica configuración
@@ -105,7 +106,7 @@ server {
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
-        
+
         # Aumentar timeouts para generación de IA
         proxy_read_timeout 600s;
         proxy_connect_timeout 600s;
@@ -119,7 +120,7 @@ server {
 ```bash
 # Desde el servidor, verificar servicios
 curl http://localhost:8000/health
-curl http://localhost:11434/api/tags
+curl http://187.77.41.214:11434/api/tags
 
 # Desde tu máquina, verificar acceso externo
 curl http://187.77.41.214:8000/health
@@ -130,6 +131,7 @@ curl http://187.77.41.214:8000/health
 #### Los ejercicios no se generan
 
 1. **Verificar Ollama dentro del contenedor**:
+
 ```bash
 docker exec -it fase_final_backend curl http://ollama:11434/api/tags
 ```
@@ -141,11 +143,13 @@ docker network inspect fase_final_default
 ```
 
 2. **Verificar logs del backend**:
+
 ```bash
 docker logs fase_final_backend -f | grep -i "ollama\|error\|exception"
 ```
 
 3. **Verificar que el modelo esté descargado**:
+
 ```bash
 docker exec -it fase_final_ollama ollama list
 ```
@@ -153,11 +157,13 @@ docker exec -it fase_final_ollama ollama list
 #### ChromaDB no funciona
 
 1. **Verificar ChromaDB**:
+
 ```bash
 docker exec -it fase_final_backend curl http://chroma:8000/api/v1/heartbeat
 ```
 
 2. **Ver logs de ChromaDB**:
+
 ```bash
 docker logs fase_final_chroma -f
 ```
@@ -165,11 +171,13 @@ docker logs fase_final_chroma -f
 #### Base de datos no conecta
 
 1. **Verificar PostgreSQL**:
+
 ```bash
 docker exec -it fase_final_db psql -U postgres -d ai_native -c "SELECT 1;"
 ```
 
 2. **Verificar variable DATABASE_URL**:
+
 ```bash
 docker exec -it fase_final_backend env | grep DATABASE_URL
 ```
@@ -267,6 +275,7 @@ docker run --rm -v fase_final_chroma_data:/data -v $(pwd):/backup alpine tar czf
 ## Soporte
 
 Si tienes problemas en producción, revisa:
+
 1. Logs del backend: `docker logs fase_final_backend -f`
 2. Estado de servicios: `docker-compose ps`
 3. Guía de troubleshooting en `SETUP_AI.md`

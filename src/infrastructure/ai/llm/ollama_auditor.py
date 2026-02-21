@@ -14,7 +14,7 @@ class OllamaAuditor(IAiAuditor):
             "http://host.docker.internal:11434",
             "http://172.17.0.1:11434", 
             "http://ollama:11434", 
-            "http://localhost:11434"
+            "http://187.77.41.214:11434"
         ]
         self.base_url = None
         # FIX 1: Unificamos el modelo a llama3.2 para no reventar la RAM

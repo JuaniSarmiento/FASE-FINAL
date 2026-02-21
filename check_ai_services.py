@@ -8,7 +8,7 @@ import requests
 import sys
 import os
 
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://187.77.41.214:11434")
 REQUIRED_MODEL = "llama3"
 
 def check_ollama_connection():
