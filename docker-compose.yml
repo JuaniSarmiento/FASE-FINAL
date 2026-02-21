@@ -16,17 +16,17 @@ services:
       interval: 5s
 
   #ollama:
-    #image: ollama/ollama:latest
-    #container_name: fase_final_ollama
-    #ports:
-    #  - "11434:11434"
-    #volumes:
-    #  - ollama_data:/root/.ollama
-    #healthcheck:
-    #  test: ["CMD", "ollama", "list"]
-    #  interval: 10s
-    #  timeout: 5s
-    #  retries: 5
+  #image: ollama/ollama:latest
+  #container_name: fase_final_ollama
+  #ports:
+  #  - "11434:11434"
+  #volumes:
+  #  - ollama_data:/root/.ollama
+  #healthcheck:
+  #  test: ["CMD", "ollama", "list"]
+  #  interval: 10s
+  #  timeout: 5s
+  #  retries: 5
 
   chroma:
     image: chromadb/chroma:0.4.24
@@ -58,8 +58,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/ai_native
       - OLLAMA_BASE_URL=http://187.77.41.214:11434
-      - chomra_db_host=chroma
-      - chomra_db_port=8000
+      - CHROMA_DB_HOST=chroma
+      - CHROMA_DB_PORT=8000
       - SECRET_KEY=fase-final-cloud-secret-key-2024-production
       - DB_ECHO=False
       - PYTHONUNBUFFERED=1
